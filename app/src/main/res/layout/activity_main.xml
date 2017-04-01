@@ -7,6 +7,7 @@
     tools:context="brijeshjoshi.whatsyourwifi.MainActivity">
 
     <TextView
+        android:id="@+id/your_wifi_textView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Hello World!"
