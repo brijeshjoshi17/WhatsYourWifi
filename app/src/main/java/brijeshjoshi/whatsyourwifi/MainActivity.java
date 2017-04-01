@@ -1,48 +1,52 @@
 package brijeshjoshi.whatsyourwifi;
 
-import android.content.Context;
-import android.net.ConnectivityManager;
-import android.net.Network;
-import android.net.NetworkInfo;
-import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
+import android.util.Log;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "WhatsYourWifi";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView wifiInfoTextView = (TextView) findViewById(R.id.your_wifi_textView);
-        wifiInfoTextView.setText(getCurrentSsid(this));
+
+        connectToNetwork();
     }
 
-    private static String getCurrentSsid(Context context) {
-        String ssid = null;
-        ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context
-                .CONNECTIVITY_SERVICE);
+    private void connectToNetwork() {
+        WifiConfiguration wfc = new WifiConfiguration();
+        wfc.SSID = PreferenceHelper.getStringPreference(PreferenceHelper.KEY_SSID);
+        wfc.preSharedKey = String.format("\"%s\"", PreferenceHelper.getStringPreference
+                (PreferenceHelper.KEY_PASSPHRASE));
 
-        if (connManager != null) {
-            Network[] networks = connManager.getAllNetworks();
-            for (Network network : networks) {
-                NetworkInfo networkInfo = connManager.getNetworkInfo(network);
-                if (networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI
-                        && networkInfo.isConnected()) {
-                    final WifiManager wifiManager = (WifiManager) context.getApplicationContext()
-                            .getSystemService(Context.WIFI_SERVICE);
-                    final WifiInfo connectionInfo = wifiManager.getConnectionInfo();
-                    if (connectionInfo != null) {
-                        ssid = connectionInfo.getSSID();
-                        break;
-                    }
-                }
-            }
+        wfc.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+        wfc.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
+        wfc.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+        wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+        wfc.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+        wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP40);
+        wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.WEP104);
+        wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+        wfc.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+
+        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService
+                (WIFI_SERVICE);
+
+        List<WifiConfiguration> wifiConfigurations = wifiManager.getConfiguredNetworks();
+        for (WifiConfiguration wifiConfiguration : wifiConfigurations) {
+            Log.d(TAG, wifiConfiguration.toString());
         }
 
-        return ssid;
-    }
+        int netId = wifiManager.addNetwork(wfc);
 
+        wifiManager.disconnect();
+        wifiManager.enableNetwork(netId, true);
+        wifiManager.reconnect();
+    }
 }
