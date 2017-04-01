@@ -4,9 +4,6 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
-
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "WhatsYourWifi";
@@ -38,13 +35,7 @@ public class MainActivity extends AppCompatActivity {
         WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService
                 (WIFI_SERVICE);
 
-        List<WifiConfiguration> wifiConfigurations = wifiManager.getConfiguredNetworks();
-        for (WifiConfiguration wifiConfiguration : wifiConfigurations) {
-            Log.d(TAG, wifiConfiguration.toString());
-        }
-
         int netId = wifiManager.addNetwork(wfc);
-
         wifiManager.disconnect();
         wifiManager.enableNetwork(netId, true);
         wifiManager.reconnect();
